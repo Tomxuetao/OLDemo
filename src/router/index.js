@@ -1,27 +1,142 @@
+/**
+ * 全站路由配置
+ *
+ * 建议:
+ * 1. 代码中路由统一使用name属性跳转(不使用path属性)
+ */
 import Vue from 'vue'
-import VueRouter from 'vue-router'
-import Home from '../views/Home.vue'
+import Router from 'vue-router'
+import dynamicMenuRoutes from './routers'
+import { isURL } from '@/utils/validate'
 
-Vue.use(VueRouter)
+/*
+ * 解决Vue-router 报NavigationDuplicated 的错误
+ * 报错原因在于Vue-router在3.1之后把$router.push()方法改为了Promise。所以假如没有回调函数，错误信息就会交给全局的路由错误处理，因此就会报上述的错误。
+ */
+const original = Router.prototype.push
+Router.prototype.push = function push (location, onResolve, onReject) {
+  if (onResolve || onReject) return original.call(this, location, onResolve, onReject)
+  return original.call(this, location).catch(err => err)
+}
 
-const routes = [
-  {
-    path: '/',
-    name: 'Home',
-    component: Home
-  },
-  {
-    path: '/about',
-    name: 'About',
-    // route level code-splitting
-    // this generates a separate chunk (about.[hash].js) for this route
-    // which is lazy-loaded when the route is visited.
-    component: () => import(/* webpackChunkName: "about" */ '../views/About.vue')
-  }
+Vue.use(Router)
+// 开发环境不使用懒加载, 因为懒加载页面太多的话会造成webpack热更新太慢, 所以只有生产环境使用懒加载
+const _import = require('./import-' + process.env.NODE_ENV)
+
+// 全局路由(无需嵌套上左右整体布局)
+const globalRoutes = [
+  { path: '/404', component: _import('common/404'), name: '404', meta: { title: '404未找到' } }
 ]
 
-const router = new VueRouter({
-  routes
+// 主入口路由(需嵌套上左右整体布局)
+const mainRoutes = {
+  path: '/',
+  component: _import('main/main'),
+  name: 'main',
+  redirect: { name: 'home' },
+  meta: { title: '主入口整体布局' },
+  children: [
+    { path: '/home', component: _import('common/home'), name: 'home', meta: { title: '首页' } }
+  ]
+}
+
+const router = new Router({
+  mode: 'hash',
+  scrollBehavior: () => ({ y: 0 }),
+  // 是否已经添加动态(菜单)路由
+  isAddDynamicMenuRoutes: false,
+  routes: globalRoutes.concat(mainRoutes)
 })
+
+router.beforeEach((to, from, next) => {
+  // 添加动态(菜单)路由
+  // 1. 已经添加 or 全局路由, 直接访问
+  // 2. 获取菜单列表, 添加并保存本地存储
+  if (router.options.isAddDynamicMenuRoutes || fnCurrentRouteType(to, globalRoutes) === 'global') {
+    next()
+  } else {
+    if (dynamicMenuRoutes.length > 0) {
+      fnAddDynamicMenuRoutes(dynamicMenuRoutes)
+      router.options.isAddDynamicMenuRoutes = true
+      sessionStorage.setItem('menuList', JSON.stringify(dynamicMenuRoutes || '[]'))
+      next({ ...to, replace: true })
+    } else {
+      sessionStorage.setItem('menuList', '[]')
+      next()
+    }
+  }
+})
+
+/**
+ * 判断当前路由类型, global: 全局路由, main: 主入口路由
+ * @param route
+ * @param globalRoutes
+ * @returns {*}
+ */
+function fnCurrentRouteType (route, globalRoutes = []) {
+  let temp = []
+  for (let i = 0; i < globalRoutes.length; i++) {
+    if (route.path === globalRoutes[i].path) {
+      return 'global'
+    } else if (globalRoutes[i].children && globalRoutes[i].children.length >= 1) {
+      temp = temp.concat(globalRoutes[i].children)
+    }
+  }
+  return temp.length >= 1 ? fnCurrentRouteType(route, temp) : 'main'
+}
+
+/**
+ * 添加动态(菜单)路由
+ * @param {*} menuList 菜单列表
+ * @param {*} routes 递归创建的动态(菜单)路由
+ */
+function fnAddDynamicMenuRoutes (menuList = [], routes = []) {
+  let temp = []
+  for (let i = 0; i < menuList.length; i++) {
+    if (menuList[i].list && menuList[i].list.length >= 1) {
+      temp = temp.concat(menuList[i].list)
+    } else if (menuList[i].url && /\S/.test(menuList[i].url)) {
+      menuList[i].url = menuList[i].url.replace(/^\//, '')
+      const route = {
+        path: menuList[i].url.replace('/', '-'),
+        component: null,
+        name: menuList[i].url.replace('/', '-'),
+        meta: {
+          menuId: menuList[i].menuId,
+          title: menuList[i].name,
+          isDynamic: true,
+          isTab: true,
+          iframeUrl: ''
+        }
+      }
+      // url以http[s]://开头, 通过iframe展示
+      if (isURL(menuList[i].url)) {
+        route.path = `i-${menuList[i].menuId}`
+        route.name = `i-${menuList[i].menuId}`
+        route.meta.iframeUrl = menuList[i].url
+      } else {
+        try {
+          route.component = _import(`modules/${menuList[i].url}`) || null
+        } catch (e) {}
+      }
+      routes.push(route)
+    }
+  }
+  if (temp.length >= 1) {
+    fnAddDynamicMenuRoutes(temp, routes)
+  } else {
+    mainRoutes.name = 'main-dynamic'
+    mainRoutes.children = routes
+    router.addRoutes([
+      mainRoutes,
+      { path: '*', redirect: { name: '404' } }
+    ])
+    sessionStorage.setItem('dynamicMenuRoutes', JSON.stringify(mainRoutes.children || '[]'))
+    console.log('\n')
+    console.log('%c!<-------------------- 动态(菜单)路由 s -------------------->', 'color:blue')
+    console.log(mainRoutes.children)
+    console.log('%c!<-------------------- 动态(菜单)路由 e -------------------->', 'color:blue')
+  }
+}
 
 export default router

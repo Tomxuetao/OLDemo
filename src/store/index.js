@@ -1,15 +1,14 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
+import common from './modules/common'
 
 Vue.use(Vuex)
 
 export default new Vuex.Store({
-  state: {
+  modules: {
+    common
   },
   mutations: {
   },
-  actions: {
-  },
-  modules: {
-  }
+  strict: process.env.NODE_ENV !== 'production'
 })
