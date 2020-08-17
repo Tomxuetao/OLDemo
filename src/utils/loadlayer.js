@@ -58,4 +58,34 @@ export function getTiandituLayer (options) {
       })
     })
   })
+
+  // const vectorSource = new VectorSource()
+  // const vectorLayer = new VectorLayer({
+  //   source: vectorSource,
+  //   style: new Style({
+  //     stroke: new Stroke({
+  //       color: 'rgba(0, 0, 255, 1.0)',
+  //       width: 2
+  //     })
+  //   })
+  // })
+  // this.$root.globalMap.addLayer(vectorLayer)
+  //
+  // const featureRequest = new WFS().writeGetFeature({
+  //   srsName: 'EPSG:3857',
+  //   featureNS: 'http://geoserver.org',
+  //   featurePrefix: 'xian_shp',
+  //   featureTypes: ['demo_data'],
+  //   outputFormat: 'application/json'
+  // })
+  // fetch('http://121.43.146.20:6350/geoserver/xian_shp/ows', {
+  //   method: 'POST',
+  //   body: new XMLSerializer().serializeToString(featureRequest)
+  // }).then(response => {
+  //   return response.json()
+  // }).then(json => {
+  //   const features = new GeoJSON().readFeatures(json)
+  //   vectorSource.addFeatures(features)
+  //   this.$root.globalMap.getView().fit(vectorSource.getExtent())
+  // })
 }

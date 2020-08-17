@@ -47,7 +47,7 @@ module.exports = {
     config
       .plugin('html')
       .tap(args => {
-        args[0].title = 'OpenLayers学习'
+        args[0].title = 'Demo'
         args[0].favicon = 'public/favicon.ico'
         return args
       })

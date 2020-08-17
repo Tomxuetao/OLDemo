@@ -14,23 +14,23 @@
                     <icon-svg name="zhedie"></icon-svg>
                 </el-menu-item>
             </el-menu>
-            <el-menu
-                class="site-navbar__menu site-navbar__menu--right"
-                mode="horizontal">
-                <el-menu-item index="1">
-                    <a href="https://threejs.org/docs/index.html" target="_blank">官方文档</a>
-                </el-menu-item>
-                <el-menu-item index="2">
-                    <a href="https://github.com/mrdoob/three.js/" target="_blank">Git地址</a>
-                </el-menu-item>
-                <el-menu-item index="3" @click="$router.push({ name: 'theme' })">
-                    <template slot="title">
-                        <el-badge value="new">
-                            <icon-svg name="shezhi" class="el-icon-setting"></icon-svg>
-                        </el-badge>
-                    </template>
-                </el-menu-item>
-            </el-menu>
+<!--            <el-menu-->
+<!--                class="site-navbar__menu site-navbar__menu&#45;&#45;right"-->
+<!--                mode="horizontal">-->
+<!--                <el-menu-item index="1">-->
+<!--                    <a href="https://threejs.org/docs/index.html" target="_blank">官方文档</a>-->
+<!--                </el-menu-item>-->
+<!--                <el-menu-item index="2">-->
+<!--                    <a href="https://github.com/mrdoob/three.js/" target="_blank">Git地址</a>-->
+<!--                </el-menu-item>-->
+<!--                <el-menu-item index="3" @click="$router.push({ name: 'theme' })">-->
+<!--                    <template slot="title">-->
+<!--                        <el-badge value="new">-->
+<!--                            <icon-svg name="shezhi" class="el-icon-setting"></icon-svg>-->
+<!--                        </el-badge>-->
+<!--                    </template>-->
+<!--                </el-menu-item>-->
+<!--            </el-menu>-->
         </div>
     </nav>
 </template>

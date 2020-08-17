@@ -35,7 +35,37 @@ export default {
     MainContent,
     MainVuemap
   },
+
+  beforeCreate () {
+    console.log('父组件 ---> beforeCreate')
+  },
+
+  created () {
+    console.log('父组件 ---> created')
+  },
+
+  beforeUpdate () {
+    console.log('父组件 ---> beforeUpdate')
+  },
+
+  updated () {
+    console.log('父组件 ---> updated')
+  },
+
+  beforeMount () {
+    console.log('父组件 ---> beforeMount')
+  },
+
+  beforeDestroy () {
+    console.log('父组件 ---> beforeDestroy')
+  },
+
+  destroyed () {
+    console.log('父组件 ---> destroyed')
+  },
+
   mounted () {
+    console.log('父组件 ---> mounted')
     this.resetDocumentClientHeightAndWidth()
   },
   computed: {
